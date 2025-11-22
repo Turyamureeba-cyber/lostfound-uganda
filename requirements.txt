@@ -3,3 +3,5 @@ Flask-SQLAlchemy==2.5.1
 Flask-Login==0.6.3
 phonenumbers==8.13.11
 SQLAlchemy==1.4.46
+# In your local repository, add gunicorn to requirements.txt
+echo "gunicorn==21.2.0" >> requirements.txt
