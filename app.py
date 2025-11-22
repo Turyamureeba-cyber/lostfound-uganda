@@ -95,7 +95,16 @@ def login():
             return render_template('login.html', error='Invalid Uganda phone number')
         
         conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE phone = ?', (validated_phone,)).fetchone()
+        
+        try:
+            user = conn.execute('SELECT * FROM users WHERE phone = ?', (validated_phone,)).fetchone()
+        except sqlite3.OperationalError as e:
+            # If phone column doesn't exist, try email
+            if 'no such column: phone' in str(e):
+                user = conn.execute('SELECT * FROM users WHERE email = ?', (phone,)).fetchone()
+            else:
+                raise e
+        
         conn.close()
         
         if user:
