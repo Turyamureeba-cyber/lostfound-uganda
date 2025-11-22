@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="logo-section">
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="logo">
+            <h1>LostFound Uganda</h1>
+            <p>Find your lost items easily</p>
+        </div>
+        
+        <div class="auth-buttons">
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-secondary">Register</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

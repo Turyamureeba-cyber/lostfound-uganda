@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home-container">
+    <!-- User Welcome Section -->
+    {% if user %}
+    <div class="user-welcome" style="text-align: center; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;">
+        <h2>Welcome, {{ user.name }}!</h2>
+        <p>Phone: {{ user.phone }}</p>
+        <a href="{{ url_for('logout') }}" style="color: white; text-decoration: underline;">Logout</a>
+    </div>
+    {% endif %}
+
+    <!-- Artistic Categories Section - Matching PHP Design -->
+    <section class="artistic-categories">
+        <h3>Browse by Category</h3>
+        <div class="categories-grid" id="categoriesGrid">
+            <!-- Categories will be loaded here -->
+        </div>
+    </section>
+
+    <!-- Filter Buttons -->
+    <div class="filter-menu">
+        <button class="filter-btn active" data-type="all">ALL</button>
+        <button class="filter-btn" data-type="lost">🚫 Missing</button>
+        <button class="filter-btn" data-type="found">🎉 Recovered</button>
+    </div>
+
+    <!-- Items Grid -->
+    <div class="items-grid" id="itemsGrid">
+        <!-- Items will be loaded here -->
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loading" style="text-align:center; display:none;">
+        <p>Loading more items...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    /* Your CSS styles remain the same */
+    .artistic-categories {
+        text-align: center;
+        margin: 0;
+        padding: 5px 20px 0;
+    }
+
+    .artistic-categories h3 {
+        font-size: 2.2rem;
+        margin-bottom: 35px;
+        color: #2575fc;
+        font-weight: 700;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .categories-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 15px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .category-card-artistic {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 18px 10px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.4s ease;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        position: relative;
+        overflow: hidden;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    .category-card-artistic::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .category-card-artistic:hover::before {
+        left: 100%;
+    }
+
+    .category-card-artistic:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+    }
+
+    .category-card-artistic.active {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 4px #2575fc, 0 12px 30px rgba(0,0,0,0.25);
+        border: 2px solid white;
+        z-index: 10;
+        position: relative;
+    }
+
+    .category-card-artistic.active::after {
+        content: '✓';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #2575fc;
+        color: white;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+
+    .category-icon {
+        font-size: 1.8rem;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .category-name {
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+
+    /* Different colors for each category */
+    .category-card-artistic:nth-child(1) { background: linear-gradient(135deg, #FF6B6B, #FF8E8E); }
+    .category-card-artistic:nth-child(2) { background: linear-gradient(135deg, #4ECDC4, #88D3CE); }
+    .category-card-artistic:nth-child(3) { background: linear-gradient(135deg, #45B7D1, #7BC8E0); }
+    .category-card-artistic:nth-child(4) { background: linear-gradient(135deg, #96CEB4, #B8D8C0); }
+    .category-card-artistic:nth-child(5) { background: linear-gradient(135deg, #FFEAA7, #FFEFC1); color: #333; }
+    .category-card-artistic:nth-child(6) { background: linear-gradient(135deg, #DDA0DD, #E6B8E6); }
+    .category-card-artistic:nth-child(7) { background: linear-gradient(135deg, #FFA726, #FFB74D); }
+    .category-card-artistic:nth-child(8) { background: linear-gradient(135deg, #26C6DA, #4DD0E1); }
+    .category-card-artistic:nth-child(9) { background: linear-gradient(135deg, #AB47BC, #BA68C8); }
+    .category-card-artistic:nth-child(10) { background: linear-gradient(135deg, #EC407A, #F06292); }
+    .category-card-artistic:nth-child(11) { background: linear-gradient(135deg, #66BB6A, #81C784); }
+    .category-card-artistic:nth-child(12) { background: linear-gradient(135deg, #FF7043, #FF8A65); }
+
+    /* Filter Menu */
+    .filter-menu {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 30px 0;
+    }
+
+    .filter-btn {
+        padding: 10px 20px;
+        border: 2px solid #3498db;
+        background: white;
+        color: #3498db;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+        background: #3498db;
+        color: white;
+    }
+
+    /* Items Grid */
+    .items-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+        padding: 15px;
+    }
+
+    .item-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        border: 1px solid #e8e8e8;
+        padding: 12px;
+        text-align: left;
+    }
+
+    .item-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .item-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .item-card-content h4 {
+        font-size: 0.95rem;
+        margin: 6px 0;
+        line-height: 1.3;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    .item-card-content p {
+        font-size: 0.78rem;
+        margin: 4px 0;
+        line-height: 1.3;
+        color: #555;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .categories-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 1000px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .categories-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        .items-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .categories-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .items-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+    }
+</style>
+
+<script>
+class LostFoundApp {
+    constructor() {
+        this.currentPage = 1;
+        this.loading = false;
+        this.hasMore = true;
+        this.currentType = 'all';
+        this.currentCategory = '';
+        this.init();
+    }
+
+    init() {
+        this.loadCategories();
+        this.loadItems();
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentType = e.target.dataset.type;
+                this.currentPage = 1;
+                this.hasMore = true;
+                this.loadItems(true);
+            });
+        });
+
+        // Infinite scroll
+        window.addEventListener('scroll', () => {
+            if (this.loading || !this.hasMore) return;
+
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+            if (scrollTop + clientHeight >= scrollHeight - 500) {
+                this.currentPage++;
+                this.loadItems(false);
+            }
+        });
+    }
+
+    async loadCategories() {
+        try {
+            const response = await fetch('/api/categories');
+            const categories = await response.json();
+            this.renderCategories(categories);
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
+    }
+
+    renderCategories(categories) {
+        const grid = document.getElementById('categoriesGrid');
+        grid.innerHTML = categories.map(cat => `
+            <div class="category-card-artistic" data-category="${cat.name}">
+                <span class="category-icon">${cat.icon}</span>
+                <span class="category-name">${cat.name}</span>
+            </div>
+        `).join('');
+
+        // Add category click listeners
+        grid.querySelectorAll('.category-card-artistic').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const category = e.currentTarget.dataset.category;
+                
+                if (this.currentCategory === category) {
+                    this.currentCategory = '';
+                    e.currentTarget.classList.remove('active');
+                } else {
+                    this.currentCategory = category;
+                    grid.querySelectorAll('.category-card-artistic').forEach(c => c.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                }
+
+                this.currentPage = 1;
+                this.hasMore = true;
+                this.loadItems(true);
+            });
+        });
+    }
+
+    async loadItems(reset = false) {
+        if (this.loading) return;
+
+        this.loading = true;
+        document.getElementById('loading').style.display = 'block';
+
+        try {
+            let url = `/api/items?page=${this.currentPage}`;
+            if (this.currentType !== 'all') {
+                url += `&type=${this.currentType}`;
+            }
+            if (this.currentCategory) {
+                url += `&category=${encodeURIComponent(this.currentCategory)}`;
+            }
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            this.hasMore = data.has_next;
+
+            if (reset) {
+                document.getElementById('itemsGrid').innerHTML = this.renderItems(data.items);
+            } else {
+                document.getElementById('itemsGrid').innerHTML += this.renderItems(data.items);
+            }
+        } catch (error) {
+            console.error('Error loading items:', error);
+            document.getElementById('itemsGrid').innerHTML = '<p style="text-align: center; grid-column: 1 / -1;">Failed to load items</p>';
+        } finally {
+            this.loading = false;
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    renderItems(items) {
+        if (items.length === 0) {
+            return '<p style="text-align: center; grid-column: 1 / -1;">No items found</p>';
+        }
+
+        return items.map(item => {
+            // Handle image display with proper error handling
+            const imageHtml = item.image_url ? 
+                `<img src="${item.image_url}" alt="${this.escapeHtml(item.title)}" onerror="this.onerror=null; this.src='/static/placeholder.png'">` :
+                `<div style="height: 200px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999; border-radius: 6px;">No Image</div>`;
+            
+            return `
+                <div class="item-card">
+                    ${imageHtml}
+                    <div class="item-card-content">
+                        <h4>${this.escapeHtml(item.title)}</h4>
+                        <p>${this.escapeHtml(item.description.substring(0, 100))}...</p>
+                        <p><strong>Category:</strong> ${this.escapeHtml(item.category)}</p>
+                        <p><strong>Location:</strong> ${this.escapeHtml(item.location)}</p>
+                        <p><strong>Type:</strong> ${this.escapeHtml(item.type)}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+}
+
+// Initialize app when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new LostFoundApp();
+});
+</script>
+{% endblock %}

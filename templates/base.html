@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LostFound Uganda</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='logo.jpg') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Main Header Styles */
+        .main-header {
+            background-color: #fff;
+            padding: 15px 0;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .main-header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            gap: 20px;
+        }
+        
+        /* Logo Container */
+        .logo-container {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            gap: 10px;
+        }
+
+        .logo-image {
+            height: 65px;
+            width: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-image:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-text-block {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .logo-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 22px;
+            font-weight: 700;
+            color: #e74c3c;
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation Styles */
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .nav-item {
+            position: relative;
+        }
+        
+        .nav-link {
+            color: #2c3e50;
+            font-weight: 500;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            font-size: 14px;
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: block;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        
+        .nav-link:hover {
+            color: #e74c3c;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 15px;
+            width: calc(100% - 30px);
+            height: 2px;
+            background: linear-gradient(90deg, #e74c3c, #3498db);
+            transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+        
+        .nav-link:hover::after {
+            transform: scaleX(1);
+        }
+        
+        .nav-link.active {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        .nav-link.active::after {
+            transform: scaleX(1);
+        }
+
+        /* Header Actions */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .social-icon {
+            color: #555;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #f8f9fa;
+            text-decoration: none;
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .social-icon.linkedin:hover {
+            color: #fff;
+            background: #0077b5;
+        }
+        
+        .social-icon.twitter:hover {
+            color: #fff;
+            background: #1da1f2;
+        }
+        
+        .social-icon.facebook:hover {
+            color: #fff;
+            background: #1877f2;
+        }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-toggle:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 280px;
+            height: auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 2000;
+            padding: 25px;
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.3);
+            transition: right 0.4s ease;
+            border-radius: 0 0 0 20px;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+
+        .mobile-menu-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #fff;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            width: 35px;
+            height: 35px;
+        }
+
+        .mobile-nav-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .mobile-nav-link {
+            display: block;
+            padding: 16px 20px;
+            font-size: 15px;
+            color: #fff;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-family: 'Playfair Display', serif;
+            text-transform: uppercase;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-nav-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .mobile-menu-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+        }
+
+        .mobile-menu-backdrop.active {
+            display: block;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 991px) {
+            .nav-menu, .social-icons {
+                display: none;
+            }
+            
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Footer Styles */
+        .main-menu-footer {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 50px 0 30px;
+            margin-top: 50px;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            padding: 0 20px;
+        }
+
+        .footer-section h3 {
+            color: #3498db;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 8px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-section a:hover {
+            color: #3498db;
+        }
+
+        .main-footer {
+            background: #1a252f;
+            color: #7f8c8d;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 0;
+            }
+
+            .footer-section {
+                padding: 15px;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .footer-section:nth-child(odd) {
+                border-right: 1px solid rgba(255, 255, 255, 0.15);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="main-header-container">
+            <!-- Logo -->
+            <div class="logo-container">
+                <a href="{{ url_for('index') }}" class="logo-link">
+                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="logo-image" onerror="this.style.display='none'">
+                    <div class="logo-text-block">
+                        <div class="logo-title">LostFound Uganda</div>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Navigation Menu - Hidden on mobile -->
+            <nav class="main-nav">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">Report Missing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">Report Recovered</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">Contact us</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <div class="social-icons">
+                    <a href="#" class="social-icon linkedin">in</a>
+                    <a href="#" class="social-icon twitter">𝕏</a>
+                    <a href="#" class="social-icon facebook">f</a>
+                </div>
+                
+                <!-- Menu Toggle -->
+                <button class="menu-toggle" aria-label="Menu">☰</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Backdrop -->
+    <div class="mobile-menu-backdrop" id="mobileMenuBackdrop"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">✕</button>
+        </div>
+        <ul class="mobile-nav-menu">
+            <li class="mobile-nav-item">
+                <a href="{{ url_for('index') }}" class="mobile-nav-link">Home</a>
+            </li>
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Report Missing</a>
+            </li>
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Report Recovered</a>
+            </li>
+            <li class="mobile-nav-item">
+                <a href="#" class="mobile-nav-link">Contact us</a>
+            </li>
+        </ul>
+    </div>
+
+    <main>
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <section class="main-menu-footer">
+        <div class="footer-container">
+            <!-- Quick Links -->
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="#">Report Lost Item</a></li>
+                    <li><a href="#">Report Found Item</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+
+            <!-- Categories -->
+            <div class="footer-section">
+                <h3>Categories</h3>
+                <ul id="footer-categories">
+                    <!-- Categories will be loaded by JavaScript -->
+                </ul>
+            </div>
+
+            <!-- Help & Support -->
+            <div class="footer-section">
+                <h3>Help & Support</h3>
+                <ul>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">How It Works</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Safety Tips</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <div class="contact-info">
+                    <p>📧 info@lostfounduganda.com</p>
+                    <p>📞 +256 758 797 772</p>
+                    <p>📍 Kampala, Uganda</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link">📘</a>
+                        <a href="#" class="social-link">🐦</a>
+                        <a href="#" class="social-link">💼</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="main-footer">
+        <div class="footer-bottom">
+            <p>&copy; {{ now.year }} LostFound Uganda. All Rights Reserved.</p>
+            <p class="footer-credit">Made with ❤️ for Uganda</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+            const backdrop = document.getElementById('mobileMenuBackdrop');
+
+            function openMobileMenu() {
+                mobileMenu.style.display = 'block';
+                backdrop.classList.add('active');
+                setTimeout(() => {
+                    mobileMenu.classList.add('active');
+                }, 10);
+            }
+            
+            function closeMobileMenu() {
+                mobileMenu.classList.remove('active');
+                backdrop.classList.remove('active');
+                setTimeout(() => {
+                    mobileMenu.style.display = 'none';
+                }, 400);
+            }
+            
+            menuToggle.addEventListener('click', openMobileMenu);
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+            backdrop.addEventListener('click', closeMobileMenu);
+            
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+
+            // Load categories for footer
+            fetch('/api/categories')
+                .then(response => response.json())
+                .then(categories => {
+                    const footerCategories = document.getElementById('footer-categories');
+                    footerCategories.innerHTML = categories.map(cat => 
+                        `<li><a href="#" onclick="filterByCategory('${cat.name}')">${cat.icon} ${cat.name}</a></li>`
+                    ).join('');
+                });
+
+            // Close menu on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+                    closeMobileMenu();
+                }
+            });
+        });
+
+        function filterByCategory(category) {
+            // This will be implemented in the home page
+            console.log('Filter by category:', category);
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
